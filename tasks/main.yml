@@ -1,0 +1,34 @@
+---
+
+- name: Update apt cache
+  become: yes
+  apt: update_cache=yes
+  register: system_updated
+
+- name: Check for lock file upgrade has been run on the system.
+  become: yes
+  stat: path={{ lock_file_path }}
+  register: system_not_upgraded
+
+- name: Upgrade all packages - Once only
+  when: not system_not_upgraded.stat.exists
+  become: yes
+  run_once: yes
+  apt:
+    upgrade: dist
+    force: yes
+    update_cache: yes
+  register: system_upgraded
+
+- name: Create lock file in "{{ lock_file_path }} if system been upgraded ONCE"
+  when: not system_upgraded | skipped
+  become: yes
+  file:
+    path: "{{ lock_file_path }}"
+    state: touch
+    owner: root
+    group: root
+  register: upgrade_once_lock_file_created
+  changed_when: false
+
+# - debug: msg="{{ system_not_upgraded }}"

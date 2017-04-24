@@ -1,0 +1,5 @@
+---
+# default variables
+# please overwrite in the playbook.yml
+
+lock_file_path: /root/.ansible_upgraded_once
